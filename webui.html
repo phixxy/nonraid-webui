@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>NonRAID WebUI</title>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: sans-serif; }
+    .disk { border: 1px solid #ccc; padding: 10px; margin-bottom: 5px; }
+    .healthy { color: green; }
+    .warning { color: orange; }
+    .error { color: red; }
+  </style>
+</head>
+<body>
+  <h1>NonRAID Control Panel</h1>
+  <div id="array-info"></div>
+  <h2>Disks</h2>
+  <div id="disk-info"></div>
+
+  <script>
+    async function arrayAction(action) {
+      try {
+        const res = await fetch(`/array/${action}`, {
+          method: "POST"
+          // No body needed
+        });
+
+        const data = await res.json();
+        console.log(`${action} result:`, data);
+        alert(`${action} result: ${data.output}`);
+      } catch (err) {
+        console.error(`Failed to ${action}:`, err);
+        alert(`Failed to ${action}`);
+      }
+    }
+    async function loadArrayStatus() {
+      try {
+        const res = await fetch("/array/status");
+        const data = await res.json();
+
+        if (!data.output) {
+          document.getElementById("array-info").textContent = "Error loading array status";
+          return;
+        }
+
+        // Parse JSON string if necessary
+        const json = typeof data.output === "string" ? JSON.parse(data.output) : data.output;
+
+        // Array info
+        const array = json.array;
+        const resync = json.resync;
+        let resyncHtml = "";
+        const healthClass = array.health.status === "HEALTHY" ? "healthy" : "error";
+        if (resync.active) {
+          resyncHtml = `
+          <p><strong>Parity Action:</strong> ${resync.action} </p>
+          <p><strong>Parity % Done:</strong> ${resync.progress_percent} </p>
+          <p><strong>Parity ETA:</strong> ${resync.eta_seconds} </p>
+          `;
+        }
+        const arrayHtml = `
+          <p><strong>Status:</strong> ${array.state}</p>
+          <p><strong>Health:</strong> <span class="${healthClass}">${array.health.status}</span> - ${array.health.details}</p>
+          <p><strong>Parity Size:</strong> ${array.size.parity_size_gb} GB</p>
+          ${resyncHtml}
+          <p><strong>Data Size:</strong> ${array.size.data_gb} GB</p>
+        `;
+        document.getElementById("array-info").innerHTML = arrayHtml;
+
+        // Disk info
+        const disksDiv = document.getElementById("disk-info");
+        disksDiv.innerHTML = ""; // Clear previous
+
+        json.disks.forEach(disk => {
+          let fsInfo = "";
+          if (disk.filesystem) {
+            fsInfo = `<br><strong>Filesystem:</strong> ${disk.filesystem.type} @ ${disk.filesystem.mountpoint} (${disk.filesystem.usage} used)`;
+          }
+
+          const diskHtml = `
+            <div class="disk">
+              <p><strong>Slot:</strong> ${disk.slot} | <strong>Type:</strong> ${disk.type} | <strong>Device:</strong> ${disk.device} | <strong>Size:</strong> ${disk.size_gb} GB | <strong>Status:</strong> ${disk.status}</p>
+              ${fsInfo}
+            </div>
+          `;
+          disksDiv.innerHTML += diskHtml;
+        });
+
+      } catch (err) {
+        document.getElementById("array-info").textContent = "Failed to load array info";
+        console.error(err);
+      }
+    }
+    
+    // Load array status on page load
+    window.addEventListener("DOMContentLoaded", loadArrayStatus);
+  </script>
+  <button onclick="loadArrayStatus()">Reload Status</button>
+  <button onclick="arrayAction('stop')">Stop Array</button>
+  <button onclick="arrayAction('start')">Start Array</button>
+  <button onclick="arrayAction('mount')">Mount Disks</button>
+  <button onclick="arrayAction('unmount')">Unmount Disks</button>
+</body>
+</html>
