@@ -94,11 +94,16 @@
     
     // Load array status on page load
     window.addEventListener("DOMContentLoaded", loadArrayStatus);
+    // Reload status every 5 seconds
+    setInterval(loadArrayStatus, 5000);
   </script>
   <button onclick="loadArrayStatus()">Reload Status</button>
   <button onclick="arrayAction('stop')">Stop Array</button>
   <button onclick="arrayAction('start')">Start Array</button>
   <button onclick="arrayAction('mount')">Mount Disks</button>
   <button onclick="arrayAction('unmount')">Unmount Disks</button>
+  <button onclick="arrayAction('check/CORRECT')">Check Parity (CORRECT)</button>
+  <button onclick="arrayAction('check/CANCEL')">Cancel Parity Check</button>
+  <button onclick="arrayAction('check/NOCORRECT')">Check Parity (NOCORRECT)</button>
 </body>
 </html>
