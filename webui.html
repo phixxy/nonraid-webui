@@ -21,7 +21,7 @@
   async function startArray() {
     try {
       // Step 1: Start array
-      const startRes = await fetch("/array/start", { method: "POST" });
+      const startRes = await fetch("/api/array/start", { method: "POST" });
       const startData = await startRes.json();
       console.log("Start result:", startData);
       alert(`Start result: ${startData.output}`);
@@ -32,7 +32,7 @@
       }
 
       // Step 2: Mount
-      const mountRes = await fetch("/array/mount", { method: "POST" });
+      const mountRes = await fetch("/api/array/mount", { method: "POST" });
       const mountData = await mountRes.json();
       console.log("Mount result:", mountData);
       alert(`Mount result: ${mountData.output}`);
@@ -45,7 +45,7 @@
   async function stopArray() {
     try {
       // Step 1: Unmount
-      const unmountRes = await fetch("/array/unmount", { method: "POST" });
+      const unmountRes = await fetch("/api/array/unmount", { method: "POST" });
       const unmountData = await unmountRes.json();
       console.log("Unmount result:", unmountData);
       alert(`Unmount result: ${unmountData.output}`);
