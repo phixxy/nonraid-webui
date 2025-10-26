@@ -63,3 +63,35 @@ def list_unassigned_disks():
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@router.post("/partition/{diskName}", response_model=CommandResult)
+def partition_disk(diskName: str):
+    try:
+        cmd = ["sgdisk", "-o", "-a", "8", "-n", "1:32K:0", f"/dev/{diskName}"]
+        result = run_cmd(cmd)
+        if not result.success:
+            raise HTTPException(status_code=500, detail=f"Failed to partition {diskName}")
+        return CommandResult(
+            command=" ".join(cmd),
+            output=result.output,
+            success=True
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@router.post("/format/{diskName}/{fstype}", response_model=CommandResult)
+def format_disk(diskName: str, fstype: str):
+    try:
+        cmd = [f"mkfs.{fstype}", f"/dev/{diskName}"]
+        result = run_cmd(cmd)
+        if not result.success:
+            raise HTTPException(status_code=500, detail=f"Failed to format {diskName} as {fstype}")
+        return CommandResult(
+            command=" ".join(cmd),
+            output=result.output,
+            success=True
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
