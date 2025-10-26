@@ -141,21 +141,32 @@
         document.getElementById("array-info").textContent = "Failed to load array info";
         console.error(err);
       }
-      await reloadUI();
+      // Send array data to the button
+      updateButton(array);
     }
+
+    async function updateButton(arrayData) {
+      const buttonContainer = document.getElementById("start-stop-button");
+      if (json.array.state === "STARTED") {
+        buttonContainer.innerHTML = `<button onclick="stopArray()">Stop Array</button>`;
+      } else {
+        buttonContainer.innerHTML = `<button onclick="startArray()">Start Array</button>`;
+      }
+    }
+
     // Reload UI after button presses
     async function reloadUI() {
       await loadArrayStatus();
+      await updateButton();
     }
     
     // Load array status on page load
     window.addEventListener("DOMContentLoaded", reloadUI);
     // Reload status every 10 seconds
-    setInterval(loadArrayStatus, 10000);
+    setInterval(reloadUI, 10000);
   </script>
   <button onclick="loadArrayStatus()">Reload Status</button>
-  <button onclick="stopArray()">Stop</button>
-  <button onclick="startArray()">Start</button>
+  <div id="start-stop-button"></div>
   <button onclick="arrayAction('mount')">Mount Disks</button>
   <button onclick="arrayAction('unmount')">Unmount Disks</button>
   <button onclick="arrayAction('check/CORRECT')">Check Parity (CORRECT)</button>
