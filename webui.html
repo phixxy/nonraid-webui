@@ -18,6 +18,54 @@
   <div id="disk-info"></div>
 
   <script>
+  async function startArray() {
+    try {
+      // Step 1: Start array
+      const startRes = await fetch("/array/start", { method: "POST" });
+      const startData = await startRes.json();
+      console.log("Start result:", startData);
+      alert(`Start result: ${startData.output}`);
+
+      if (!startData.success) {
+        alert("Start failed — aborting start sequence.");
+        return;
+      }
+
+      // Step 2: Mount
+      const mountRes = await fetch("/array/mount", { method: "POST" });
+      const mountData = await mountRes.json();
+      console.log("Mount result:", mountData);
+      alert(`Mount result: ${mountData.output}`);
+
+    } catch (err) {
+      console.error("Failed to start array:", err);
+      alert("Failed to start array");
+    }
+  }
+  async function stopArray() {
+    try {
+      // Step 1: Unmount
+      const unmountRes = await fetch("/array/unmount", { method: "POST" });
+      const unmountData = await unmountRes.json();
+      console.log("Unmount result:", unmountData);
+      alert(`Unmount result: ${unmountData.output}`);
+
+      if (!unmountData.success) {
+        alert("Unmount failed — aborting stop sequence.");
+        return;
+      }
+
+      // Step 2: Stop
+      const stopRes = await fetch("/array/stop", { method: "POST" });
+      const stopData = await stopRes.json();
+      console.log("Stop result:", stopData);
+      alert(`Stop result: ${stopData.output}`);
+
+    } catch (err) {
+      console.error("Failed to stop array:", err);
+      alert("Failed to stop array");
+    }
+  }
     async function arrayAction(action) {
       try {
         const res = await fetch(`/array/${action}`, {
@@ -98,8 +146,8 @@
     setInterval(loadArrayStatus, 5000);
   </script>
   <button onclick="loadArrayStatus()">Reload Status</button>
-  <button onclick="arrayAction('stop')">Stop Array</button>
-  <button onclick="arrayAction('start')">Start Array</button>
+  <button onclick="stopArray()">Stop</button>
+  <button onclick="startArray()">Start</button>
   <button onclick="arrayAction('mount')">Mount Disks</button>
   <button onclick="arrayAction('unmount')">Unmount Disks</button>
   <button onclick="arrayAction('check/CORRECT')">Check Parity (CORRECT)</button>

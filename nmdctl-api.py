@@ -14,10 +14,11 @@ class CommandResult(BaseModel):
 
 def run_cmd(cmd: list[str]) -> CommandResult:
     try:
-        result = subprocess.run(cmd, text=True, capture_output=True, check=True)
+        result = subprocess.run(cmd, text=True, capture_output=True)
         return CommandResult(command=" ".join(cmd), output=result.stdout.strip(), success=True)
     except subprocess.CalledProcessError as e:
-        return CommandResult(command=" ".join(cmd), output=result.stderr.strip(), success=False)
+        output = (e.stdout or "") + (e.stderr or "")
+        return CommandResult(command=" ".join(cmd), output=output.strip(), success=False)
 
 # This really needs to be removed in the long run so it isn't run as root.
 @app.get("/")
