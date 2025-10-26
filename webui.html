@@ -5,7 +5,18 @@
   <meta charset="utf-8">
   <style>
     body { font-family: sans-serif; }
-    .disk { border: 1px solid #ccc; padding: 10px; margin-bottom: 5px; }
+    .disk {
+      border-left: 3px solid #888;
+      padding: 4px 8px;
+      margin: 2px 0;
+      font-size: 0.9rem;
+      line-height: 1.2;
+      background-color: #f9f9f9;
+      border-radius: 4px;
+    }
+    .disk p {
+      margin: 2px 0;
+    }
     .healthy { color: green; }
     .warning { color: orange; }
     .error { color: red; }
@@ -32,8 +43,8 @@
   <h2>Array</h2>
   <div id="disk-info"></div>
 
-  <h2>Non-Array Disks</h2>
-  <div id="non-array-disks"></div>
+  <h2>Unassigned Disks</h2>
+  <div id="unassigned-disks"></div>
 
   <button onclick="reloadUI()">Reload Status</button>
 
@@ -46,7 +57,7 @@
     }
 
     async function fetchDisks() {
-      const res = await fetch("/api/disks/list");
+      const res = await fetch("/api/disks/unassigned");
       const data = await res.json();
       return typeof data.output === "string" ? JSON.parse(data.output) : data.output;
     }
@@ -142,32 +153,35 @@
       }).join("");
     }
 
-    function buildNonArrayDisksHTML(disksData) {
-      // Recursive function to render disks and children
+    function buildUnassignedDisksHTML(disksData) {
+      // Render disks and children
       function renderDisk(disk, level = 0) {
         const indent = "&nbsp;".repeat(level * 4); // visual indentation for nested parts
-        const mountpoints = disk.mountpoints && disk.mountpoints.length
-          ? disk.mountpoints.filter(Boolean).join(", ")
-          : "Not mounted";
 
-        let html = `
-          <div class="disk" style="margin-left:${level * 10}px;">
-            <p>${indent}<strong>Device:</strong> ${disk.name} |
-            <strong>Type:</strong> ${disk.type} |
-            <strong>Size:</strong> ${disk.size} |
-            <strong>Mounted at:</strong> ${mountpoints}</p>
-          </div>
-        `;
+        let html = `<div class="disk" style="margin-left:${level * 10}px;">`;
 
-        // Render children (partitions, LVMs, etc.)
+        // Render this disk
+        html += `<p>${indent}<strong>Device:</strong> ${disk.name} |
+                <strong>Type:</strong> ${disk.type} |
+                <strong>Size:</strong> ${disk.size} |
+                <strong>Mounted at:</strong> ${disk.mountpoint || "Not mounted"}</p>`;
+
+        // Render all children inside the same div
         if (disk.children && disk.children.length > 0) {
-          html += disk.children.map(child => renderDisk(child, level + 1)).join("");
+          disk.children.forEach(child => {
+            html += renderDisk(child, level + 1);
+          });
         }
 
+        html += `</div>`; // close parent div
         return html;
       }
 
-      return disksData.blockdevices.map(disk => renderDisk(disk)).join("");
+      let html = "";
+      disksData.blockdevices.forEach(disk => {
+        html += renderDisk(disk);
+      });
+      return html;
     }
 
 
@@ -186,7 +200,7 @@
         const diskData = await fetchDisks();
         document.getElementById("array-info").innerHTML = buildArrayInfoHTML(arrayData);
         document.getElementById("disk-info").innerHTML = buildArrayDisksHTML(arrayData);
-        document.getElementById("non-array-disks").innerHTML = buildNonArrayDisksHTML(diskData);
+        document.getElementById("unassigned-disks").innerHTML = buildUnassignedDisksHTML(diskData);
         updateButton(arrayData.array);
       } catch (err) {
         console.error("Failed to load array status:", err);
