@@ -16,7 +16,7 @@ def list_unassigned_disks():
             "lsblk",
             "-J",
             "-o",
-            "NAME,KNAME,MODEL,SERIAL,UUID,SIZE,TYPE,MOUNTPOINT"
+            "NAME,KNAME,MODEL,SERIAL,UUID,SIZE,TYPE,MOUNTPOINT,FSTYPE"
         ]
         lsblk_res = run_cmd(lsblk_cmd)
         if not lsblk_res.success:

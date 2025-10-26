@@ -94,7 +94,12 @@ function buildArrayDisksHTML(arrayData) {
     }
     return `
       <div class="disk">
-        <p><strong>Slot:</strong> ${disk.slot} | <strong>Type:</strong> ${disk.type} | <strong>Device:</strong> ${disk.device} | <strong>Size:</strong> ${disk.size_gb} GB | <strong>Status:</strong> ${disk.status} ${fsInfo}</p>
+        <p><strong>Slot:</strong> ${disk.slot} | 
+        <strong>Type:</strong> ${disk.type} | 
+        <strong>Device:</strong> ${disk.device} | 
+        <strong>Size:</strong> ${disk.size_gb} GB | 
+        <strong>Status:</strong> ${disk.status} |
+        ${fsInfo}</p>
       </div>
     `;
   }).join("");
@@ -107,6 +112,7 @@ function buildUnassignedDisksHTML(disksData) {
     html += `<p>${indent}<strong>Device:</strong> ${disk.name} |
             <strong>Type:</strong> ${disk.type} |
             <strong>Size:</strong> ${disk.size} |
+            <strong>Filesystem:</strong> ${disk.fstype || "None"} |
             <strong>Mounted at:</strong> ${disk.mountpoint || "Not mounted"}</p>`;
     if (disk.children && disk.children.length > 0) {
       disk.children.forEach(child => {
