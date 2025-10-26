@@ -56,7 +56,7 @@
       }
 
       // Step 2: Stop
-      const stopRes = await fetch("/array/stop", { method: "POST" });
+      const stopRes = await fetch("/api/array/stop", { method: "POST" });
       const stopData = await stopRes.json();
       console.log("Stop result:", stopData);
       alert(`Stop result: ${stopData.output}`);
@@ -68,7 +68,7 @@
   }
     async function arrayAction(action) {
       try {
-        const res = await fetch(`/array/${action}`, {
+        const res = await fetch(`/api/array/${action}`, {
           method: "POST"
           // No body needed
         });
@@ -83,7 +83,7 @@
     }
     async function loadArrayStatus() {
       try {
-        const res = await fetch("/array/status");
+        const res = await fetch("/api/array/status");
         const data = await res.json();
 
         if (!data.output) {
