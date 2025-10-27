@@ -123,19 +123,50 @@ function buildArrayInfoHTML(arrayData) {
 }
 
 function buildArrayDisksHTML(arrayData) {
+  // Used to check if format button should be hidden
+  const isArrayStopped = arrayData.array?.state === "STOPPED";
+
   return arrayData.disks.map(disk => {
     let fsInfo = "";
+    let formatButton = "";
+
     if (disk.filesystem) {
-      fsInfo = `<strong>Filesystem:</strong> ${disk.filesystem.type} Mountpoint: ${disk.filesystem.mountpoint} Used: ${disk.filesystem.usage}`;
+      const fsType = disk.filesystem.type || "unknown";
+      const mountpoint = disk.filesystem.mountpoint || "Not mounted";
+      const usage = disk.filesystem.usage || "N/A";
+
+      fsInfo = `<strong>Filesystem:</strong> ${fsType} | Mountpoint: ${mountpoint} | Used: ${usage}`;
+
+      // Show format button if filesystem is unknown or missing
+      if (fsType.toLowerCase() === "unknown" || fsType.toLowerCase() === "none") {
+        formatButton = `
+          <button class="btn-format" onclick="formatDisk('${disk.disk_name}')">
+            Format
+          </button>
+        `;
+      }
+    } else {
+      // If no filesystem at all, show format button (unless parity or array)
+      if (!isArrayStopped && disk.type !== "P") {
+        formatButton = `
+          <button class="btn-format" onclick="formatDisk('${disk.device}')">
+            Format
+          </button>
+        `;
+      }
     }
+
     return `
       <div class="disk">
-        <p><strong>Slot:</strong> ${disk.slot} | 
-        <strong>Type:</strong> ${disk.type} | 
-        <strong>Device:</strong> ${disk.device} | 
-        <strong>Size:</strong> ${disk.size_gb} GB | 
-        <strong>Status:</strong> ${disk.status} |
-        ${fsInfo}</p>
+        <p>
+          <strong>Slot:</strong> ${disk.slot} | 
+          <strong>Type:</strong> ${disk.type} | 
+          <strong>Device:</strong> ${disk.device} | 
+          <strong>Size:</strong> ${disk.size_gb} GB | 
+          <strong>Status:</strong> ${disk.status} | 
+          ${fsInfo}
+        </p>
+        ${formatButton}
       </div>
     `;
   }).join("");
