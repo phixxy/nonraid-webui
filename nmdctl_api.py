@@ -36,3 +36,29 @@ def stop_array():
             #TODO add logging
             print(f"Warning: could not remove {STATE_FILE}: {e}")
     return result
+
+# Usage should be /create/slot:diskName,slot:diskName,slot:diskName
+# Example: /create/P:sda1,1:sdb1,2:sdc1
+@router.post("/create/{disks}", response_model=CommandResult)
+def array_action(disks: str):
+    entries = disks.split(',')
+    slots_disks = []
+
+    for e in entries:
+        if ':' not in e:
+            raise HTTPException(status_code=400, detail=f"Invalid entry '{e}', must be slot:diskName")
+        slot, disk = e.split(':', 1)  # split only on first colon
+        slot = slot.strip()
+        disk = disk.strip()
+
+        if not slot or not disk:
+            raise HTTPException(status_code=400, detail=f"Invalid entry '{e}', slot or disk missing")
+        
+        dev_path = f"/dev/{disk}"
+        if not os.path.exists(dev_path):
+            raise HTTPException(status_code=400, detail=f"Disk {dev_path} does not exist")
+        
+        slots_disks.append(f"{slot}:{dev_path}")
+
+    cmd = ["nmdctl", "create"] + slots_disks
+    return run_cmd(cmd)
