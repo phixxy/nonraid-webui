@@ -30,6 +30,14 @@ def list_unassigned_disks():
             raise HTTPException(status_code=500, detail="Failed to get array status")
         array_json = array_res.output
 
+        # Check if no array present
+        if "Error: nonraid module is not loaded" in array_json:
+            return CommandResult(
+            command="lsblk -J + filtered non-array disks",
+            output=lsblk_res.output,
+            success=True
+        )
+
         # Collect array disk names and ids
         array_disks = set()
         array_disk_ids = set()

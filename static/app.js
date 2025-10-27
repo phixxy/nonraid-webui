@@ -216,17 +216,30 @@ function updateButton(array) {
 }
 
 async function reloadUI() {
+  let arrayData = null;
+  let diskData = null;
+
+  // Try fetching array status
   try {
-    const arrayData = await fetchArrayStatus();
-    const diskData = await fetchDisks();
+    const res = await fetchArrayStatus();
+    arrayData = res;
     document.getElementById("array-info").innerHTML = buildArrayInfoHTML(arrayData);
     document.getElementById("disk-info").innerHTML = buildArrayDisksHTML(arrayData);
-    document.getElementById("unassigned-disks").innerHTML = buildUnassignedDisksHTML(diskData);
     updateButton(arrayData.array);
   } catch (err) {
-    console.error("Failed to load array status:", err);
-    document.getElementById("array-info").textContent = "Failed to load array info";
-    alert("Failed to load array info");
+    console.warn("Array not available or failed to load:", err);
+    document.getElementById("array-info").textContent = "Array not present or not loaded.";
+    document.getElementById("disk-info").innerHTML = "<p>No array disks to display</p>";
+  }
+
+  // Try fetching unassigned disks
+  try {
+    const res = await fetchDisks();
+    diskData = res;
+    document.getElementById("unassigned-disks").innerHTML = buildUnassignedDisksHTML(diskData);
+  } catch (err) {
+    console.error("Failed to load unassigned disks:", err);
+    document.getElementById("unassigned-disks").innerHTML = "<p>Failed to load unassigned disks</p>";
   }
 }
 
