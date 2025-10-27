@@ -24,6 +24,31 @@ section {
   margin-bottom: 20px;
 }
 
+.disk-actions {
+  margin-top: 6px;
+}
+
+/* Partition button */
+.btn-partition {
+  background-color: #3a7bd5;
+  color: #fff;
+}
+
+.btn-partition:hover {
+  background-color: #336bb8;
+}
+
+/* Format button */
+.btn-format {
+  background-color: #e84118;
+  color: #fff;
+}
+
+.btn-format:hover {
+  background-color: #c23616;
+}
+
+
 button {
   background-color: #3a3a5a;
   color: #e0e0e0;
@@ -79,3 +104,4 @@ button:hover {
   color: #e84118;
   font-weight: bold;
 }
+

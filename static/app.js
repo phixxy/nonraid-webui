@@ -65,6 +65,42 @@ async function stopArray() {
   await reloadUI();
 }
 
+async function partitionDisk(diskName) {
+  try {
+    if (!confirm(`Are you sure you want to partition ${diskName}? THIS WILL REMOVE ALL DATA ON DISK!`)) return;
+    console.log(`Partitioning disk ${diskName}...`);
+    const res = await fetch(`/api/disks/partition/${diskName}`, { method: "POST" });
+    const data = await res.json();
+    console.log("Partition result:", data);
+    if (!data.success) {
+      alert(`Failed to partition disk ${diskName}`);
+    }
+  } catch (err) {
+    console.error(`Error partitioning disk ${diskName}:`, err);
+    alert(`Error partitioning disk ${diskName}`);
+  }
+  await reloadUI();
+}
+
+async function formatDisk(diskName, fstype) {
+  try {
+    const fstype = prompt("Enter filesystem type (xfs, btrfs):", "xfs");
+    if (!fstype) return;
+    if (!confirm(`Are you sure you want to format ${diskName}?`)) return;
+    console.log(`Formatting disk ${diskName}...`);
+    const res = await fetch(`/api/disks/format/${diskName}/${fstype}`, { method: "POST" });
+    const data = await res.json();
+    console.log("Format result:", data);
+    if (!data.success) {
+      alert(`Failed to format disk ${diskName}`);
+    }
+  } catch (err) {
+    console.error(`Error formatting disk ${diskName}:`, err);
+    alert(`Error formatting disk ${diskName}`);
+  }
+  await reloadUI();
+}
+
 function buildArrayInfoHTML(arrayData) {
   const array = arrayData.array;
   const resync = arrayData.resync;
@@ -114,6 +150,15 @@ function buildUnassignedDisksHTML(disksData) {
             <strong>Size:</strong> ${disk.size} |
             <strong>Filesystem:</strong> ${disk.fstype || "None"} |
             <strong>Mounted at:</strong> ${disk.mountpoint || "Not mounted"}</p>`;
+
+    // Only show format for top-level disks
+    if (level === 0 && disk.type === "disk") {
+      html += `
+        <div class="disk-actions">
+          <button class="btn-partition" onclick="partitionDisk('${disk.name}')">Partition</button>
+        </div>
+      `;
+    }
     if (disk.children && disk.children.length > 0) {
       disk.children.forEach(child => {
         html += renderDisk(child, level + 1);
